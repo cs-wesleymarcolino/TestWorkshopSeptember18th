@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TestWorkshopSeptember18th</string>
+    <string name="login">Login</string>
+    <string name="error_email_is_empty">Email is empty</string>
 </resources>
