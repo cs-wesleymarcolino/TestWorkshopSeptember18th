@@ -1,14 +1,7 @@
 package br.com.concrete.testworkshopseptember18th
 
-import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.action.ViewActions.typeText
-import androidx.test.espresso.assertion.ViewAssertions
-import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.intent.rule.IntentsTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.rule.ActivityTestRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,26 +9,70 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class LoginActivityTest {
     @get:Rule
-    val activityRule = ActivityTestRule(LoginActivity::class.java)
+    val activityRule = IntentsTestRule(LoginActivity::class.java)
 
     @Test
     fun givenInitialState_shouldHaveEmailAndPasswordEmpty() {
-        onView(withId(R.id.email))
-            .check(matches(withText("")))
-
-        onView(withId(R.id.password))
-            .check(matches(withText("")))
+        loginAssert {
+            checkEmailFieldIsEmpty()
+            checkPasswordFieldIsEmpty()
+        }
     }
 
     @Test
     fun givenEmailIsEmpty_whenLogin_shouldShowEmailIsEmptyError() {
-        onView(withId(R.id.password))
-            .perform(typeText("aA#412345"))
+        loginAct {
+            typePassword("aA#412345")
+            clickLogin()
+        }
 
-        onView(withId(R.id.do_login))
-            .perform(click())
+        loginAssert {
+            checkMessageWasShown(R.string.error_email_is_empty)
+        }
+    }
 
-        onView(withText(R.string.error_email_is_empty))
-            .check(matches(isDisplayed()))
+    @Test
+    fun givenPasswordIsEmpty_whenLogin_shouldShowPasswordIsEmpty() {
+        loginAct {
+            typeEmail("w.jonathan.marcolino@accenture.com")
+
+            clickLogin()
+        }
+
+        loginAssert {
+            checkMessageWasShown(R.string.error_password_is_empty)
+        }
+    }
+
+    @Test
+    fun givenPasswordIsInvalid_whenLogin_shouldShowInvalidPassword() {
+        loginAct {
+            typeEmail("w.jonathan.marcolino@accenture.com")
+            typePassword("123456")
+
+            clickLogin()
+        }
+
+        loginAssert {
+            checkMessageWasShown(R.string.error_password_is_invalid)
+        }
+    }
+
+    @Test
+    fun givenEmailAndPasswordAreValid_whenLogin_shouldGoToHomeScreen() {
+        loginArrange {
+            mockHomeActivityIntent()
+        }
+
+        loginAct {
+            typeEmail("w.jonathan.marcolino@accenture.com")
+            typePassword("aA#123453")
+
+            clickLogin()
+        }
+
+        loginAssert {
+            checkHomeActivityIntentWasCalled()
+        }
     }
 }
